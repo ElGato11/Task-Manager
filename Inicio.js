@@ -5,7 +5,7 @@ var task = [
         description: "this is a test for check it's working",
         members: [],
         creationDate: 1710409507000,
-        dueDate: new Date(Date.now() + 30000),
+        dueDate:new Date(Date.now() + 30000),
         state: "To Do"
     },
     {
@@ -37,7 +37,7 @@ var task = [
         description: "this is a test for check it's working",
         members: [],
         creationDate: 1710409507000,
-        dueDate: new Date(Date.now() + 30000),
+        dueDate:new Date( Date.now() + 30000),
         state: "Done"
     },
     {
@@ -49,7 +49,7 @@ var task = [
         state: "Done"
     }
 ];
-var members = [{ name: "testMember", photo: "https://i.pinimg.com/236x/dc/9d/a6/dc9da660ea5779179669e6e49452d99e.jpg", id: 0, tasksDone: 0 }];
+var members = [{ name: "testMember", photo: "https://i.pinimg.com/236x/dc/9d/a6/dc9da660ea5779179669e6e49452d99e.jpg", id: 0, tasksDone: 0 },{ name: "testMember2", photo: "https://img1.freepnges.com/20180713/aaw/kisspng-user-profile-linkedin-netwerk-money-order-fulfillm-round-face-5b494408cd2468.5239235115315282008403.jpg", id: 1, tasksDone: 0 }];
 var idCount = 1;
 var elementDragged;
 var memberDragged;
@@ -63,7 +63,8 @@ function Task(title, description) {
     this.title = title;
     this.description = description;
     this.members = [];
-    this.creationDate = Date.now();
+    this.creationDate =new (Date.now());
+    this.dueDate = 1;
     this.state = "To Do";
 }
 //ADD TASKS FUNCTIONS
@@ -132,10 +133,13 @@ function drawProgress() {
         drawToDo();
     })
     taskContainerProgress.addEventListener("change", event =>{
-        titleTarget = event.target.parentElement.getAttribute("title");
-        task.find(oneTask=>oneTask.title == titleTarget).state="Done";
+        let titleTarget = event.target.parentElement.getAttribute("title");
+        let taskTarget = task.find(oneTask=>oneTask.title == titleTarget);
+        taskTarget.state = "Done";
+
         drawDone();
         drawProgress();
+        drawMembers();
     })
     //ahora asigno el numero de tareas
     let numeroTareas = document.getElementById("iP");
@@ -149,6 +153,7 @@ function drawDone() {
     task.forEach(element => {
         if (element.state === "Done") {
             taskContainerDone.innerHTML += `<div> title: ${element.title}<br> descrition: ${element.description}</div>`;
+            members.filter(member=> element.members.includes(member.id)).forEach(member=> member.tasksDone++);
             count++;
         }
     })
@@ -163,7 +168,7 @@ function drawMembers(){
 
     members.forEach(element=>{
         
-            membersContainer.innerHTML+=`<span> name: ${element.name} <img id="${element.id}" draggable="true" width="20px" src=${element.photo}> tasks done: ${element.tasksDone}</span>`;
+            membersContainer.innerHTML+=`<span> name: ${element.name} <img id="${element.id}" draggable="true" width="20px" src=${element.photo}> tasks done: ${element.tasksDone} // </span>`;
         
     })
     membersContainer.addEventListener("dragstart",event=>{
@@ -183,5 +188,30 @@ function drawAll() {
     drawToDo();
     drawMembers();
 }
-
+//para controlar que una tarea se termina
+function controlarTareas() {
+    setInterval(() => {
+        task.forEach(element => {
+            if (element.dueDate <= new Date(Date.now())) {
+                // Comprobamos el estado de la tarea y la actualizamos según corresponda
+                if (element.state == "To Do") {
+                    let targetContainer = document.querySelectorAll("#taskContainerToDo div");
+                    targetContainer.find(div => div.getAttribute("title") == element.title).style.backgroundColor = "red";
+                    drawToDo();
+                } else if (element.state == "In Progress") {
+                    let targetContainer = document.querySelectorAll("#taskContainerProgress div");
+                    targetContainer.find(div => div.getAttribute("title") == element.title).style.backgroundColor = "red";
+                    drawProgress();
+                } else if (element.state == "Done") {
+                    let targetContainer = document.querySelectorAll("#taskContainerDone div");
+                    targetContainer.find(div => div.getAttribute("title") == element.title).style.backgroundColor = "red";
+                    drawDone();
+                }
+                
+            }
+        });
+    }, 1000); // La función se ejecutará cada segundo
+} 
+controlarTareas();
 drawAll();
+
