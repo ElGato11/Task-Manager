@@ -104,8 +104,8 @@ function drawToDo() {
         if (!taskTarget.members.includes(memberDragged) & memberDragged != null) {
             taskTarget.members.push(memberDragged);
             drawToDo();
-            memberDragged = null;
         }
+        resetDragged();
         
     })
     //ahora asigno el numero de tareas
@@ -130,9 +130,12 @@ function drawProgress() {
     taskContainerProgress.addEventListener("dragover", event => event.preventDefault());
     taskContainerProgress.addEventListener("drop", event => {
         event.preventDefault();
+        if(elementDragged != null){
         task.find(oneTask => oneTask.title == elementDragged).state = "In Progress";
         drawProgress();
         drawToDo();
+        }
+        resetDragged();
     })
     taskContainerProgress.addEventListener("change", event => {
         let titleTarget = event.target.parentElement.getAttribute("title");
@@ -152,10 +155,13 @@ function drawDone() {
     var taskContainerDone = document.getElementById("taskContainerDone");
     let count = 0;
     taskContainerDone.innerHTML = "";//esto se podría hacer mejor con el filter
+    members.forEach(member => member.tasksDone=0);
     task.forEach(element => {
         if (element.state === "Done") {
             taskContainerDone.innerHTML += `<div> title: ${element.title}<br> descrition: ${element.description}</div>`;
-            members.filter(member => element.members.includes(member.id)).forEach(member => member.tasksDone++);
+            filterMembers();
+            let targetMembers  = members.filter(member => element.members.includes(member.id));
+            targetMembers.forEach(member => member.tasksDone++);
             count++;
         }
     })
@@ -222,6 +228,19 @@ function controlarTareas() {
             }
         });
     }, 1000); // La función se ejecutará cada segundo
+}
+//soluciona problemas
+function resetDragged(){
+    elementDragged = null;
+    memberDragged = null;
+}
+//Elimina miembros repetidos;
+function filterMembers() {
+    task.forEach(element => {
+        element.members = element.members.filter((member, index) => {
+            return element.members.indexOf(member) === index;
+        });
+    });
 }
 drawAll();
 controlarTareas();
